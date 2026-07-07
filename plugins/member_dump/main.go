@@ -199,7 +199,7 @@ func (p *MemberDump) dumpMembers(ctx context.Context, trigger dumpTrigger) error
 		}
 
 		offset += len(result.Participants)
-		if len(result.Participants) < pageLimit {
+		if result.Count > 0 && offset >= result.Count {
 			break
 		}
 
