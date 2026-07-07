@@ -157,11 +157,15 @@ func (p *ContentAudit) Handle(ctx context.Context, updates tg.UpdatesClass) erro
 					logMessageWarning(message, consts.ErrorLoadUserBio, userBioErr)
 				}
 			}
-			premiumEmojiStatusPackName, premiumEmojiStatusPackErr := utils.LoadPremiumEmojiStatusPackName(ctx, p.api, sourceUser)
+			premiumEmojiStatusTitle, premiumEmojiStatusPackShortName, premiumEmojiStatusPackErr := utils.LoadPremiumEmojiStatusPackTitleAndShortName(ctx, p.api, sourceUser)
 			if premiumEmojiStatusPackErr == nil {
-				message.SourcePremiumEmojiStatusPackName = premiumEmojiStatusPackName
+				if premiumEmojiStatusPackShortName != "" {
+					message.SourcePremiumEmojiStatusTitle = premiumEmojiStatusTitle
+					message.SourcePremiumEmojiStatusPackShortName = premiumEmojiStatusPackShortName
+					message.SourcePremiumEmojiStatusLink = "https://t.me/addemoji/" + premiumEmojiStatusPackShortName
+				}
 			} else {
-				logMessageWarning(message, consts.ErrorLoadPremiumEmojiStatusPackName, premiumEmojiStatusPackErr)
+				logMessageWarning(message, consts.ErrorLoadPremiumEmojiStatusPackTitleAndShortName, premiumEmojiStatusPackErr)
 			}
 			customEmojiPackNames, customEmojiPackErr := utils.LoadCustomEmojiPackNames(ctx, p.api, customEmojiDocumentIDs)
 			if customEmojiPackErr != nil {

@@ -1,18 +1,20 @@
 package contentaudit
 
 type messageInfo struct {
-	ID                               int                 // 消息 ID
-	Text                             string              // 普通文本消息内容；有媒体时留空
-	Caption                          string              // 媒体消息附带文字；无媒体时留空
-	Entities                         []messageEntityInfo // 消息文本实体
-	RichTexts                        []richTextInfo      // 网页预览 RichText 文本
-	SourceUserID                     int64               // 发送者用户 ID
-	SourceFullNickName               string              // 发送者完整昵称
-	SourceUserBio                    string              // 发送者 bio
-	SourcePremiumEmojiStatusPackName string              // 发送者 premium emoji status 所在 pack short name
-	SourceUserIsBot                  bool                // 发送者是否为 bot
-	SourceGroupUsername              string              // 来源群用户名
-	SourceUserUsername               string              // 发送者用户名
+	ID                                    int                 // 消息 ID
+	Text                                  string              // 普通文本消息内容；有媒体时留空
+	Caption                               string              // 媒体消息附带文字；无媒体时留空
+	Entities                              []messageEntityInfo // 消息文本实体
+	RichTexts                             []richTextInfo      // 网页预览 RichText 文本
+	SourceUserID                          int64               // 发送者用户 ID
+	SourceFullNickName                    string              // 发送者完整昵称
+	SourceUserBio                         string              // 发送者 bio
+	SourcePremiumEmojiStatusTitle         string              // premium emoji status sticker set display title
+	SourcePremiumEmojiStatusPackShortName string              // premium emoji status sticker set short name
+	SourcePremiumEmojiStatusLink          string              // addemoji link generated from pack short name
+	SourceUserIsBot                       bool                // 发送者是否为 bot
+	SourceGroupUsername                   string              // 来源群用户名
+	SourceUserUsername                    string              // 发送者用户名
 }
 
 type messageEntityInfo struct {

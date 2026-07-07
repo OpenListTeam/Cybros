@@ -6,7 +6,9 @@ func (p *ContentAudit) handleMessage(ctx context.Context, message messageInfo) e
 	userID := message.SourceUserID
 	fullNickName := message.SourceFullNickName
 	userBio := message.SourceUserBio
-	premiumEmojiStatusPackName := message.SourcePremiumEmojiStatusPackName
+	premiumEmojiStatusTitle := message.SourcePremiumEmojiStatusTitle
+	premiumEmojiStatusPackShortName := message.SourcePremiumEmojiStatusPackShortName
+	premiumEmojiStatusLink := message.SourcePremiumEmojiStatusLink
 	isBot := message.SourceUserIsBot
 	text := message.Text
 	caption := message.Caption
@@ -19,7 +21,9 @@ func (p *ContentAudit) handleMessage(ctx context.Context, message messageInfo) e
 	_ = fullNickName
 	_ = isBot
 	_ = userBio
-	_ = premiumEmojiStatusPackName
+	_ = premiumEmojiStatusTitle
+	_ = premiumEmojiStatusPackShortName
+	_ = premiumEmojiStatusLink
 	_ = text
 	_ = caption
 	_ = entities

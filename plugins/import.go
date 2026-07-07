@@ -2,6 +2,7 @@ package plugins
 
 import (
 	contentaudit "cybros/plugins/content_audit"
+	memberdump "cybros/plugins/member_dump"
 
 	"github.com/gotd/td/tg"
 )
@@ -9,6 +10,7 @@ import (
 func New() []Plugin {
 	return []Plugin{
 		contentaudit.New(),
+		memberdump.New(),
 	}
 }
 

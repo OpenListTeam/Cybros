@@ -60,9 +60,9 @@ const (
 	ErrorSourceParticipantEmpty   = "Source participant input is empty"
 	ErrorSourceUserInputEmpty     = "Source user input is empty"
 
-	ErrorWriteCacheFile                 = "Write cache file"
-	ErrorLoadUserBio                    = "Load user bio"
-	ErrorLoadPremiumEmojiStatusPackName = "Load premium emoji status pack name"
-	ErrorLoadCustomEmojiPackNames       = "Load custom emoji pack names"
-	ErrorHandleContentAuditMessage      = "Handle content audit message"
+	ErrorWriteCacheFile                              = "Write cache file"
+	ErrorLoadUserBio                                 = "Load user bio"
+	ErrorLoadPremiumEmojiStatusPackTitleAndShortName = "Load premium emoji status pack title and short name"
+	ErrorLoadCustomEmojiPackNames                    = "Load custom emoji pack names"
+	ErrorHandleContentAuditMessage                   = "Handle content audit message"
 )
