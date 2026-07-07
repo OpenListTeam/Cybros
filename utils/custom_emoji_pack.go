@@ -237,7 +237,7 @@ func customEmojiPackTitleAndShortName(ctx context.Context, api *tg.Client, pack 
 func inputStickerSetCacheKey(pack tg.InputStickerSetClass) string {
 	packID, ok := pack.(*tg.InputStickerSetID)
 	if ok {
-		return fmt.Sprintf("id:%d:%d", packID.ID, packID.AccessHash)
+		return fmt.Sprintf("id:%d", packID.ID)
 	}
 
 	shortName, ok := pack.(*tg.InputStickerSetShortName)
