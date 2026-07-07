@@ -23,7 +23,9 @@ func LoadUserBio(ctx context.Context, api *tg.Client, user tg.InputUserClass) (s
 	}
 
 	return cache.Load[string]("user_bio", inputUserCacheKey(user), userBioCacheTTL, func() (string, error) {
-		userFull, err := api.UsersGetFullUser(ctx, user)
+		userFull, err := RetryFloodWait(ctx, func() (*tg.UsersUserFull, error) {
+			return api.UsersGetFullUser(ctx, user)
+		})
 		if err != nil {
 			return "", err
 		}

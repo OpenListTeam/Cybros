@@ -26,11 +26,16 @@ func (h *UpdateHandler) SetAPI(api *tg.Client) {
 
 func (h *UpdateHandler) Handle(ctx context.Context, updates tg.UpdatesClass) error {
 	for _, plugin := range h.plugins {
-		err := plugin.Handle(ctx, updates)
-		if err != nil {
-			logger.Log.WithError(err).Error(consts.ErrorTelegramPlugin)
-		}
+		currentPlugin := plugin
+		go h.handlePlugin(ctx, currentPlugin, updates)
 	}
 
 	return nil
+}
+
+func (h *UpdateHandler) handlePlugin(ctx context.Context, plugin plugins.Plugin, updates tg.UpdatesClass) {
+	err := plugin.Handle(ctx, updates)
+	if err != nil {
+		logger.Log.WithError(err).Error(consts.ErrorTelegramPlugin)
+	}
 }

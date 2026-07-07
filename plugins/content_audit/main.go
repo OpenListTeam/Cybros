@@ -148,39 +148,38 @@ func (p *ContentAudit) Handle(ctx context.Context, updates tg.UpdatesClass) erro
 			SourceGroupUsername: groupUsernames[groupID],
 			SourceUserUsername:  userUsernames[userID],
 		}
-		go func(message messageInfo, sourceUser *tg.User, userInput tg.InputUserClass, messageText string, messageEntities []tg.MessageEntityClass, messageMedia tg.MessageMediaClass, customEmojiDocumentIDs []int64) {
-			if userInput != nil {
-				userBio, userBioErr := utils.LoadUserBio(ctx, p.api, userInput)
-				if userBioErr == nil {
-					message.SourceUserBio = userBio
-				} else {
-					logMessageWarning(message, consts.ErrorLoadUserBio, userBioErr)
-				}
-			}
-			premiumEmojiStatusTitle, premiumEmojiStatusPackShortName, premiumEmojiStatusPackErr := utils.LoadPremiumEmojiStatusPackTitleAndShortName(ctx, p.api, sourceUser)
-			if premiumEmojiStatusPackErr == nil {
-				if premiumEmojiStatusPackShortName != "" {
-					message.SourcePremiumEmojiStatusTitle = premiumEmojiStatusTitle
-					message.SourcePremiumEmojiStatusPackShortName = premiumEmojiStatusPackShortName
-					message.SourcePremiumEmojiStatusLink = "https://t.me/addemoji/" + premiumEmojiStatusPackShortName
-				}
-			} else {
-				logMessageWarning(message, consts.ErrorLoadPremiumEmojiStatusPackTitleAndShortName, premiumEmojiStatusPackErr)
-			}
-			customEmojiPackNames, customEmojiPackErr := utils.LoadCustomEmojiPackNames(ctx, p.api, customEmojiDocumentIDs)
-			if customEmojiPackErr != nil {
-				logMessageWarning(message, consts.ErrorLoadCustomEmojiPackNames, customEmojiPackErr)
-			}
-			entities := utils.ExtractMessageEntities(messageText, messageEntities, customEmojiPackNames)
-			richTexts := utils.ExtractMessageRichTexts(messageMedia, customEmojiPackNames)
-			message.Entities = contentAuditMessageEntities(entities)
-			message.RichTexts = contentAuditRichTexts(richTexts)
 
-			handleErr := p.handleMessage(ctx, message)
-			if handleErr != nil {
-				logMessageError(message, consts.ErrorHandleContentAuditMessage, handleErr)
+		if sourceUserInput != nil {
+			userBio, userBioErr := utils.LoadUserBio(ctx, p.api, sourceUserInput)
+			if userBioErr == nil {
+				auditMessage.SourceUserBio = userBio
+			} else {
+				logMessageWarning(auditMessage, consts.ErrorLoadUserBio, userBioErr)
 			}
-		}(auditMessage, sourceUser, sourceUserInput, message.Message, entities, message.Media, customEmojiDocumentIDs)
+		}
+		premiumEmojiStatusTitle, premiumEmojiStatusPackShortName, premiumEmojiStatusPackErr := utils.LoadPremiumEmojiStatusPackTitleAndShortName(ctx, p.api, sourceUser)
+		if premiumEmojiStatusPackErr == nil {
+			if premiumEmojiStatusPackShortName != "" {
+				auditMessage.SourcePremiumEmojiStatusTitle = premiumEmojiStatusTitle
+				auditMessage.SourcePremiumEmojiStatusPackShortName = premiumEmojiStatusPackShortName
+				auditMessage.SourcePremiumEmojiStatusLink = "https://t.me/addemoji/" + premiumEmojiStatusPackShortName
+			}
+		} else {
+			logMessageWarning(auditMessage, consts.ErrorLoadPremiumEmojiStatusPackTitleAndShortName, premiumEmojiStatusPackErr)
+		}
+		customEmojiPackNames, customEmojiPackErr := utils.LoadCustomEmojiPackNames(ctx, p.api, customEmojiDocumentIDs)
+		if customEmojiPackErr != nil {
+			logMessageWarning(auditMessage, consts.ErrorLoadCustomEmojiPackNames, customEmojiPackErr)
+		}
+		extractedEntities := utils.ExtractMessageEntities(message.Message, entities, customEmojiPackNames)
+		richTexts := utils.ExtractMessageRichTexts(message.Media, customEmojiPackNames)
+		auditMessage.Entities = contentAuditMessageEntities(extractedEntities)
+		auditMessage.RichTexts = contentAuditRichTexts(richTexts)
+
+		handleErr := p.handleMessage(ctx, auditMessage)
+		if handleErr != nil {
+			logMessageError(auditMessage, consts.ErrorHandleContentAuditMessage, handleErr)
+		}
 	}
 
 	return nil

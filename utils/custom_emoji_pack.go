@@ -44,7 +44,9 @@ func LoadCustomEmojiPackTitlesAndShortNames(ctx context.Context, api *tg.Client,
 		return packTitles, packShortNames, nil
 	}
 
-	documents, err := api.MessagesGetCustomEmojiDocuments(ctx, missingDocumentIDs)
+	documents, err := RetryFloodWait(ctx, func() ([]tg.DocumentClass, error) {
+		return api.MessagesGetCustomEmojiDocuments(ctx, missingDocumentIDs)
+	})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -114,7 +116,9 @@ func LoadCustomEmojiPackNames(ctx context.Context, api *tg.Client, documentIDs [
 		return packNames, nil
 	}
 
-	documents, err := api.MessagesGetCustomEmojiDocuments(ctx, missingDocumentIDs)
+	documents, err := RetryFloodWait(ctx, func() ([]tg.DocumentClass, error) {
+		return api.MessagesGetCustomEmojiDocuments(ctx, missingDocumentIDs)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -180,9 +184,11 @@ func customEmojiPackShortName(ctx context.Context, api *tg.Client, pack tg.Input
 	}
 
 	return cache.Load[string]("emoji_pack_short_name", inputStickerSetCacheKey(pack), customEmojiPackCacheTTL, func() (string, error) {
-		packClass, err := api.MessagesGetStickerSet(ctx, &tg.MessagesGetStickerSetRequest{
-			Stickerset: pack,
-			Hash:       0,
+		packClass, err := RetryFloodWait(ctx, func() (tg.MessagesStickerSetClass, error) {
+			return api.MessagesGetStickerSet(ctx, &tg.MessagesGetStickerSetRequest{
+				Stickerset: pack,
+				Hash:       0,
+			})
 		})
 		if err != nil {
 			return "", err
@@ -208,9 +214,11 @@ func customEmojiPackTitleAndShortName(ctx context.Context, api *tg.Client, pack 
 		return packTitle, packShortName, nil
 	}
 
-	packClass, err := api.MessagesGetStickerSet(ctx, &tg.MessagesGetStickerSetRequest{
-		Stickerset: pack,
-		Hash:       0,
+	packClass, err := RetryFloodWait(ctx, func() (tg.MessagesStickerSetClass, error) {
+		return api.MessagesGetStickerSet(ctx, &tg.MessagesGetStickerSetRequest{
+			Stickerset: pack,
+			Hash:       0,
+		})
 	})
 	if err != nil {
 		return "", "", err

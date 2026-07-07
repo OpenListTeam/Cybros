@@ -20,10 +20,13 @@ func editBanned(ctx context.Context, api *tg.Client, channel tg.InputChannelClas
 		return errors.New(consts.ErrorSourceParticipantEmpty)
 	}
 
-	_, err := api.ChannelsEditBanned(ctx, &tg.ChannelsEditBannedRequest{
-		Channel:      channel,
-		Participant:  participant,
-		BannedRights: rights,
+	_, err := RetryFloodWait(ctx, func() (struct{}, error) {
+		_, err := api.ChannelsEditBanned(ctx, &tg.ChannelsEditBannedRequest{
+			Channel:      channel,
+			Participant:  participant,
+			BannedRights: rights,
+		})
+		return struct{}{}, err
 	})
 	return err
 }

@@ -17,9 +17,12 @@ func DeleteMessage(ctx context.Context, api *tg.Client, channel tg.InputChannelC
 		return errors.New(consts.ErrorSourceChannelInputEmpty)
 	}
 
-	_, err := api.ChannelsDeleteMessages(ctx, &tg.ChannelsDeleteMessagesRequest{
-		Channel: channel,
-		ID:      []int{messageID},
+	_, err := RetryFloodWait(ctx, func() (struct{}, error) {
+		_, err := api.ChannelsDeleteMessages(ctx, &tg.ChannelsDeleteMessagesRequest{
+			Channel: channel,
+			ID:      []int{messageID},
+		})
+		return struct{}{}, err
 	})
 	return err
 }

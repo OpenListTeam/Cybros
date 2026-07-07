@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,15 +17,14 @@ import (
 	"cybros/utils"
 
 	"github.com/gotd/td/tg"
-	"github.com/gotd/td/tgerr"
 )
 
 const (
 	command       = ".cl"
 	targetGroupID = int64(2573155438)
 
-	pageLimit      = 100
-	requestDelay   = time.Second
+	pageLimit    = 100
+	requestDelay = time.Second
 )
 
 type dumpTrigger struct {
@@ -130,14 +130,12 @@ func (p *MemberDump) startDump(ctx context.Context, trigger dumpTrigger) {
 	p.running = true
 	p.mu.Unlock()
 
-	go func() {
-		defer p.finishDump()
+	defer p.finishDump()
 
-		err := p.dumpMembers(ctx, trigger)
-		if err != nil {
-			logError(trigger.msgID, err)
-		}
-	}()
+	err := p.dumpMembers(ctx, trigger)
+	if err != nil {
+		logError(trigger.msgID, err)
+	}
 }
 
 func (p *MemberDump) finishDump() {
@@ -172,17 +170,10 @@ func (p *MemberDump) dumpMembers(ctx context.Context, trigger dumpTrigger) error
 	offset := 0
 	written := 0
 	for {
-		result, err := p.loadParticipants(ctx, trigger.channel, offset)
+		result, err := utils.RetryFloodWait(ctx, func() (*tg.ChannelsChannelParticipants, error) {
+			return p.loadParticipants(ctx, trigger.channel, offset)
+		})
 		if err != nil {
-			waitDuration, floodWait := tgerr.AsFloodWait(err)
-			if floodWait {
-				logFloodWait(trigger.msgID, offset, waitDuration, err)
-				err = sleepContext(ctx, waitDuration)
-				if err != nil {
-					return err
-				}
-				continue
-			}
 			return fmt.Errorf("Get channel participants offset %d: %w", offset, err)
 		}
 		if result == nil {
@@ -253,25 +244,16 @@ func (p *MemberDump) loadParticipants(ctx context.Context, channel tg.InputChann
 }
 
 func (p *MemberDump) loadPremiumEmojiStatusPacks(ctx context.Context, trigger dumpTrigger, users []tg.UserClass) (map[int64]string, map[int64]string, error) {
-	for {
-		packTitles, packShortNames, err := p.premiumEmojiStatusPacks(ctx, users)
-		if err == nil {
-			return packTitles, packShortNames, nil
+	packTitles, packShortNames, err := p.premiumEmojiStatusPacks(ctx, users)
+	if err != nil {
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, nil, err
 		}
-
-		waitDuration, floodWait := tgerr.AsFloodWait(err)
-		if floodWait {
-			logFloodWait(trigger.msgID, -1, waitDuration, err)
-			err = sleepContext(ctx, waitDuration)
-			if err != nil {
-				return nil, nil, err
-			}
-			continue
-		}
-
 		logWarningWithError(trigger.msgID, "Load premium emoji status failed", err)
 		return nil, nil, nil
 	}
+
+	return packTitles, packShortNames, nil
 }
 
 func (p *MemberDump) premiumEmojiStatusPacks(ctx context.Context, users []tg.UserClass) (map[int64]string, map[int64]string, error) {
@@ -428,15 +410,4 @@ func logError(messageID int, err error) {
 		return
 	}
 	logger.Log.WithError(err).WithField("message_id", messageID).Error("Member dump failed")
-}
-
-func logFloodWait(messageID int, offset int, waitDuration time.Duration, err error) {
-	if logger.Log == nil {
-		return
-	}
-	logger.Log.WithError(err).
-		WithField("message_id", messageID).
-		WithField("offset", offset).
-		WithField("duration", waitDuration.String()).
-		Warn("Member dump flood wait")
 }
