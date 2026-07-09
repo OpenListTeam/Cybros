@@ -33,11 +33,6 @@ type Config struct {
 }
 
 func Init(ctx context.Context) (Config, error) {
-	dotEnvErr := loadDotEnv(".env")
-	if dotEnvErr != nil {
-		return Config{}, dotEnvErr
-	}
-
 	reader := bufio.NewReader(os.Stdin)
 
 	telegramAppID, err := telegramAPIID()

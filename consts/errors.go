@@ -12,11 +12,6 @@ const (
 	ErrorGetTerminalState         = "Get terminal state: %w"
 	ErrorDisableTerminalEcho      = "Disable terminal echo: %w"
 
-	ErrorOpenFile              = "Open %s: %w"
-	ErrorDotEnvMissingEqual    = "Parse %s line %d: missing ="
-	ErrorDotEnvInvalidKey      = "Parse %s line %d: invalid key"
-	ErrorSetEnv                = "Set env %s: %w"
-	ErrorReadFile              = "Read %s: %w"
 	ErrorTelegramAPIIDInteger  = "Telegram API ID must be integer: %w"
 	ErrorTelegramAPIIDPositive = "Telegram API ID must be positive"
 
